@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're Invited — RSVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Mukta:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF3E1;
+    --cream-2:#F5E9CE;
+    --maroon:#6E1029;
+    --maroon-deep:#4A0A1B;
+    --gold:#C79A3E;
+    --gold-light:#E4C777;
+    --green:#2F4A3B;
+    --kumkum:#AC2B29;
+    --ink:#3A2317;
+    --ink-soft:#6b5344;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(110,16,41,0.07) 1px, transparent 0);
+    background-size: 22px 22px;
+    font-family:'Mukta', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 28px 14px 60px;
+  }
+  /* The full illustrated background is landscape-oriented (temples and
+     garlands sit either side of a narrow middle band). On a phone-width
+     screen, cover-scaling that image pushes almost all of it off-screen
+     to the left and right, leaving just a cream sliver. So it only
+     applies once there's enough width for the side art to actually be
+     visible; narrower screens keep the plain dot-texture above. */
+  @media (min-width: 900px){
+    body{
+      background: var(--cream) url('background_image.jpg') center center / cover no-repeat fixed;
+    }
+    .mobile-deco-top, .mobile-deco-bottom{ display:none; }
+  }
+  .mobile-deco-top, .mobile-deco-bottom{
+    position:fixed;
+    left:0;
+    width:100%;
+    pointer-events:none;
+    z-index:0;
+  }
+  .mobile-deco-top{ top:0; height:64px; }
+  .mobile-deco-bottom{ bottom:0; height:120px; }
+
+  /* --- Intro reveal (mobile) ---
+     A curtain panel holds center-screen with the Ganesha motif, then
+     slides off to the side; the invite content underneath rises in
+     with a staggered delay so it feels like an unveiling rather than
+     a page just loading. Desktop already gets the full illustrated
+     background immediately, so this is scoped to narrower screens. */
+  .intro-overlay{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg, var(--maroon) 0%, var(--maroon-deep) 100%);
+    animation: introSlideOut .9s cubic-bezier(.65,0,.35,1) forwards;
+    animation-delay: 1.9s;
+    pointer-events:none;
+  }
+  .intro-overlay .intro-inner{
+    text-align:center;
+    animation: introPulse 1.8s cubic-bezier(.22,1,.36,1) both;
+  }
+  .intro-overlay img{
+    width:350px;
+    height:auto;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+    opacity:0.96;
+  }
+  .intro-overlay .intro-mantra{
+    margin-top:18px;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:0.04em;
+    color:var(--gold-light);
+    text-shadow:0 2px 14px rgba(0,0,0,0.35);
+  }
+  @media (min-width: 900px){
+    .intro-overlay{ display:none; }
+  }
+  @keyframes introPulse{
+    0%{ opacity:0; transform:scale(0.9); }
+    60%{ opacity:0.92; transform:scale(1.015); }
+    100%{ opacity:0.92; transform:scale(1); }
+  }
+  @keyframes introSlideOut{
+    0%{ transform:translateX(0); }
+    100%{ transform:translateX(-105%); }
+  }
+  @keyframes riseIn{
+    from{ opacity:0; transform:translateY(16px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @media (max-width: 899px){
+    .reveal-item{
+      opacity:0;
+      animation: riseIn .65s ease both;
+    }
+    .r1{ animation-delay: 2.0s; }
+    .r2{ animation-delay: 2.15s; }
+    .r3{ animation-delay: 2.3s; }
+    .r4{ animation-delay: 2.45s; }
+    .r5{ animation-delay: 2.6s; }
+    .r6{ animation-delay: 2.75s; }
+    .r7{ animation-delay: 2.9s; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .intro-overlay{ display:none; }
+    .reveal-item{ opacity:1; animation:none; }
+  }
+  .invite{
+    width:100%;
+    max-width:520px;
+    background:var(--cream);
+    border:1.5px solid var(--gold);
+    border-radius:6px;
+    box-shadow: 0 0 0 6px var(--cream), 0 0 0 7px var(--gold-light);
+    padding: 0 0 8px;
+    overflow:hidden;
+    position:relative;
+    z-index:1;
+  }
+  .arch-wrap{
+    padding: 30px 24px 6px;
+    text-align:center;
+  }
+  .ganesha-img{
+    width:80px;
+    height:auto;
+  }
+  .eyebrow{
+    font-size:13px;
+    letter-spacing:0.14em;
+    color:var(--maroon);
+    font-weight:600;
+    margin:14px 0 2px;
+  }
+  .names{
+    font-family:'Cormorant Garamond', serif;
+    font-size:44px;
+    line-height:1.05;
+    color:var(--maroon-deep);
+    font-weight:600;
+    margin:6px 0 2px;
+  }
+  .amp{
+    display:block;
+    font-size:22px;
+    color:var(--gold);
+    margin:2px 0;
+    font-weight:400;
+  }
+  .subtitle{
+    font-size:14.5px;
+    color:var(--ink-soft);
+    margin: 6px 0 18px;
+    font-style:italic;
+    font-family:'Cormorant Garamond', serif;
+    font-size:19px;
+  }
+  .kolam-divider{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin: 6px auto 20px;
+  }
+  .kolam-divider .line{
+    height:1px;
+    width:60px;
+    background:linear-gradient(to right, transparent, var(--gold));
+  }
+  .kolam-divider .line.right{
+    background:linear-gradient(to left, transparent, var(--gold));
+  }
+  .kolam-divider .dot{
+    width:6px;height:6px;border-radius:50%;background:var(--gold);
+  }
+  .kolam-divider .dot.big{width:9px;height:9px;background:var(--kumkum);}
+
+  .events{
+    padding: 0 26px 8px;
+  }
+  .event-card{
+    background: #ffffffa8;
+    border:1px solid var(--gold-light);
+    border-left:4px solid var(--maroon);
+    border-radius:4px;
+    padding:14px 16px;
+    margin-bottom:14px;
+  }
+  .event-day{
+    font-size:11.5px;
+    letter-spacing:0.09em;
+    color:var(--gold);
+    font-weight:600;
+    text-transform:uppercase;
+  }
+  .event-name{
+    font-family:'Cormorant Garamond', serif;
+    font-size:24px;
+    font-weight:600;
+    color:var(--maroon-deep);
+    margin:3px 0 4px;
+  }
+  .event-detail{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+
+  .cta-wrap{
+    padding: 10px 26px 26px;
+    text-align:center;
+  }
+  .btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    font-family:'Mukta', sans-serif;
+    font-weight:600;
+    font-size:15.5px;
+    border-radius:4px;
+    padding:13px 20px;
+    width:100%;
+    transition: transform .12s ease, background .15s ease;
+  }
+  .btn:active{ transform: scale(0.98); }
+  .btn-primary{
+    background:var(--maroon);
+    color:var(--cream);
+  }
+  .btn-primary:hover{ background:var(--maroon-deep); }
+  .btn-ghost{
+    background:transparent;
+    color:var(--maroon);
+    border:1.5px solid var(--maroon);
+  }
+  .helper-note{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+  }
+
+  /* form */
+  .form-wrap{ padding: 6px 26px 26px; display:none; }
+  .form-wrap.active{ display:block; }
+  .arch-wrap.hidden, .events.hidden, .cta-wrap.hidden{ display:none; }
+
+  .progress{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin: 4px 0 22px;
+  }
+  .progress .dot{
+    width:8px;height:8px;border-radius:50%;
+    background: var(--cream-2);
+    border:1px solid var(--gold-light);
+    transition: background .2s ease;
+  }
+  .progress .dot.filled{ background:var(--kumkum); border-color:var(--kumkum); }
+
+  .step{ display:none; }
+  .step.active{ display:block; animation: fadein .3s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .step-title{
+    font-family:'Cormorant Garamond', serif;
+    font-size:24px;
+    color:var(--maroon-deep);
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .step-sub{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin:0 0 20px;
+  }
+  label.field-label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--maroon);
+    margin-bottom:6px;
+  }
+  .field{ margin-bottom:18px; }
+  input[type="text"], input[type="number"], input[type="date"], textarea{
+    width:100%;
+    font-family:'Mukta', sans-serif;
+    font-size:15px;
+    padding:11px 12px;
+    border:1.3px solid var(--gold-light);
+    border-radius:4px;
+    background:#fffdf8;
+    color:var(--ink);
+  }
+  input:focus, textarea:focus{
+    outline:none;
+    border-color:var(--maroon);
+  }
+  textarea{ resize:vertical; min-height:70px; }
+  .error-msg{
+    font-size:12.5px;
+    color:var(--kumkum);
+    margin-top:5px;
+    display:none;
+  }
+  .error-msg.show{ display:block; }
+
+  .choice-row{ display:flex; gap:10px; }
+  .choice-btn{
+    flex:1;
+    padding:12px 10px;
+    text-align:center;
+    border:1.3px solid var(--gold-light);
+    border-radius:4px;
+    background:#fffdf8;
+    cursor:pointer;
+    font-weight:600;
+    color:var(--ink-soft);
+    font-size:14.5px;
+  }
+  .choice-btn.selected{
+    background:var(--maroon);
+    color:var(--cream);
+    border-color:var(--maroon);
+  }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .stepper button{
+    width:38px;height:38px;
+    border-radius:50%;
+    border:1.3px solid var(--gold-light);
+    background:#fffdf8;
+    color:var(--maroon);
+    font-size:18px;
+    cursor:pointer;
+  }
+  .stepper span{
+    font-size:18px;
+    font-weight:600;
+    min-width:20px;
+    text-align:center;
+  }
+
+  .nav-row{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+  }
+  .nav-row .btn{ flex:1; }
+
+  .thankyou{ text-align:center; padding: 34px 26px 30px; display:none; }
+  .thankyou.active{ display:block; animation: fadein .35s ease; }
+  .thankyou .mark{
+    font-size:34px;
+    color:var(--gold);
+    margin-bottom:6px;
+  }
+  .thankyou h2{
+    font-family:'Cormorant Garamond', serif;
+    color:var(--maroon-deep);
+    font-size:28px;
+    margin:6px 0 10px;
+  }
+  .thankyou p{
+    font-size:14.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    max-width:340px;
+    margin:0 auto;
+  }
+
+  .summary-box{
+    background:#ffffffa8;
+    border:1px solid var(--gold-light);
+    border-radius:4px;
+    padding:14px 16px;
+    margin: 18px 0;
+    text-align:left;
+    font-size:13.5px;
+    color:var(--ink-soft);
+  }
+  .summary-box div{ padding:3px 0; }
+  .summary-box b{ color:var(--ink); }
+
+  @media (max-width:380px){
+    .names{ font-size:36px; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="mobile-deco-top" viewBox="0 0 200 64" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <pattern id="toran" width="50" height="64" patternUnits="userSpaceOnUse">
+      <path d="M0 4 Q25 24 50 4" stroke="#C79A3E" stroke-width="1.4" fill="none" opacity="0.6"/>
+      <line x1="25" y1="13" x2="25" y2="32" stroke="#C79A3E" stroke-width="1.1" opacity="0.55"/>
+      <path d="M19 32 L25 46 L31 32 Z" fill="#AC2B29" opacity="0.55"/>
+      <circle cx="25" cy="29" r="2.3" fill="#2F4A3B" opacity="0.5"/>
+      <circle cx="6" cy="10" r="1.6" fill="#C79A3E" opacity="0.5"/>
+      <circle cx="44" cy="10" r="1.6" fill="#C79A3E" opacity="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="64" fill="url(#toran)"/>
+</svg>
+
+<svg class="mobile-deco-bottom" viewBox="0 0 200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <pattern id="templerow" width="100" height="120" patternUnits="userSpaceOnUse">
+      <path d="M50 120 L50 66 L58 66 L58 52 L50 38 L42 52 L42 66 L34 66 L34 120" fill="#2F4A3B" opacity="0.38"/>
+      <path d="M18 120 C18 102 28 94 28 80 C28 94 38 102 38 120" fill="#2F4A3B" opacity="0.28"/>
+      <path d="M62 120 C62 102 72 94 72 80 C72 94 82 102 82 120" fill="#2F4A3B" opacity="0.28"/>
+      <rect x="0" y="116" width="100" height="4" fill="#6E1029" opacity="0.22"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="120" fill="url(#templerow)"/>
+</svg>
+
+<div class="intro-overlay" id="introOverlay">
+  <div class="intro-inner">
+    <img src="ganesha.jpg" alt="">
+    <div class="intro-mantra">Om Shri Ganeshaya Namah</div>
+  </div>
+</div>
+
+<div class="invite">
+
+  <div class="arch-wrap" id="archWrap">
+    <img src="ganesha.jpg" alt="Ganesha" class="ganesha-img reveal-item r1" style="margin-top:6px;">
+    <div class="eyebrow reveal-item r2">TOGETHER WITH THEIR FAMILIES</div>
+    <div class="names reveal-item r3">Jahnavi Yannam<span class="amp">&amp;</span>Rahul Sanjay</div>
+    <div class="subtitle reveal-item r4">request the honour of your presence</div>
+    <div class="kolam-divider reveal-item r4">
+      <span class="line"></span>
+      <span class="dot"></span>
+      <span class="dot big"></span>
+      <span class="dot"></span>
+      <span class="line right"></span>
+    </div>
+  </div>
+
+  <div class="events" id="eventsWrap">
+    <div class="event-card reveal-item r5">
+      <div class="event-day">Thursday · November 26</div>
+      <div class="event-name">Pellikuturu &amp; Pellikoduku</div>
+      <div class="event-detail">Morning rituals for the bride and groom, at their respective homes. Details will follow individually.</div>
+    </div>
+    <div class="event-card reveal-item r6">
+      <div class="event-day">Friday · November 27 · 10:21 AM</div>
+      <div class="event-name">The Wedding</div>
+      <div class="event-detail">Akella Assembly Hall, Shiva-Vishnu Temple<br>1232 Arrowhead Avenue, Livermore, CA 94551<br></div>
+    </div>
+  </div>
+
+  <div class="cta-wrap reveal-item r7" id="ctaWrap">
+    <button class="btn btn-primary" onclick="goToForm()">RSVP</button>
+    <div class="helper-note">Just a couple of minutes — it helps us plan for you with care.</div>
+  </div>
+
+  <div class="form-wrap" id="formWrap">
+    <div class="progress" id="progressDots"></div>
+
+    <!-- Step 1: Name + attending -->
+    <div class="step active" data-step="1">
+      <div class="step-title">Let's start with you</div>
+      <div class="step-sub">We're so glad you're part of this.</div>
+      <div class="field">
+        <label class="field-label">First name</label>
+        <input type="text" id="guestFirstName" placeholder="First name">
+        <div class="error-msg" id="err-firstName">Please share your first name so we know who's coming.</div>
+      </div>
+      <div class="field">
+        <label class="field-label">Last name</label>
+        <input type="text" id="guestLastName" placeholder="Last name">
+        <div class="error-msg" id="err-lastName">Please share your last name so we know who's coming.</div>
+      </div>
+      <div class="field">
+        <label class="field-label">Will you be joining us for the wedding?</label>
+        <div class="choice-row">
+          <div class="choice-btn" data-value="yes" onclick="selectChoice(this,'attending')">Joyfully, yes</div>
+          <div class="choice-btn" data-value="no" onclick="selectChoice(this,'attending')">Can't make it</div>
+        </div>
+        <div class="error-msg" id="err-attending">Please let us know either way.</div>
+      </div>
+      <div class="field" id="extraGuestsField" style="display:none;">
+        <label class="field-label">Any family joining with you?</label>
+        <div class="stepper">
+          <button type="button" onclick="changeExtra(-1)">−</button>
+          <span id="extraCount">0</span>
+          <button type="button" onclick="changeExtra(1)">+</button>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-primary" onclick="validateStep1()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Accommodation + arrival date -->
+    <div class="step" data-step="2">
+      <div class="step-title">Staying with us?</div>
+      <div class="step-sub">Let us know if you'd like accommodation arranged.</div>
+      <div class="field">
+        <div class="choice-row">
+          <div class="choice-btn" data-value="yes" onclick="selectChoice(this,'accommodation')">Yes, please</div>
+          <div class="choice-btn" data-value="no" onclick="selectChoice(this,'accommodation')">I'm sorted</div>
+        </div>
+        <div class="error-msg" id="err-accommodation">Please pick one so we can plan rooms accordingly.</div>
+      </div>
+      <div class="field" id="arrivalField" style="display:none;">
+        <label class="field-label">Arriving on</label>
+        <input type="date" id="arrivalDate" min="2026-11-25" max="2026-11-28">
+        <div class="error-msg" id="err-arrival">Please choose a date between Nov 25 and Nov 28 — accommodation is available from 4:00 PM on the 25th through 9:00 AM on the 28th.</div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="prevStep(2)">Back</button>
+        <button class="btn btn-primary" onclick="validateStep2()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Message + review -->
+    <div class="step" data-step="3">
+      <div class="step-title">Almost done</div>
+      <div class="step-sub">A note for the couple, if you'd like.</div>
+      <div class="field">
+        <textarea id="wishes" placeholder="Optional — your blessings and wishes"></textarea>
+      </div>
+      <div class="summary-box" id="summaryBox"></div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="prevStep(3)">Back</button>
+        <button class="btn btn-primary" onclick="submitRSVP()">Confirm RSVP</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="thankyou" id="thankyou">
+    <div class="mark">✻</div>
+    <h2 id="thankyouTitle">Thank you</h2>
+    <p id="thankyouText">Your response means a great deal to us. We can't wait to celebrate together.</p>
+  </div>
+
+</div>
+
+<script>
+  (function(){
+    var overlay = document.getElementById('introOverlay');
+    if(overlay){
+      overlay.addEventListener('animationend', function(){
+        overlay.remove();
+      });
+      // Fallback in case animationend doesn't fire (e.g. reduced-motion settings)
+      setTimeout(function(){
+        if(overlay.parentNode){ overlay.remove(); }
+      }, 3400);
+    }
+  })();
+
+  var state = {
+    firstName: '',
+    lastName: '',
+    name: '',
+    attending: null,
+    extraGuests: 0,
+    accommodation: null,
+    arrival: '',
+    wishes: ''
+  };
+  var currentStep = 1;
+  var totalSteps = 3;
+
+  function goToForm(){
+    document.getElementById('archWrap').classList.add('hidden');
+    document.getElementById('eventsWrap').classList.add('hidden');
+    document.getElementById('ctaWrap').classList.add('hidden');
+    document.getElementById('formWrap').classList.add('active');
+    renderProgress();
+  }
+
+  function renderProgress(){
+    var dots = document.getElementById('progressDots');
+    dots.innerHTML = '';
+    var stepsToShow = state.attending === 'no' ? 1 : totalSteps;
+    for(var i=1;i<=stepsToShow;i++){
+      var d = document.createElement('div');
+      d.className = 'dot' + (i <= currentStep ? ' filled' : '');
+      dots.appendChild(d);
+    }
+  }
+
+  function selectChoice(el, field){
+    var siblings = el.parentElement.querySelectorAll('.choice-btn');
+    siblings.forEach(function(s){ s.classList.remove('selected'); });
+    el.classList.add('selected');
+    state[field] = el.getAttribute('data-value');
+
+    if(field === 'attending'){
+      document.getElementById('extraGuestsField').style.display = (state.attending === 'yes') ? 'block' : 'none';
+      document.getElementById('err-attending').classList.remove('show');
+    }
+    if(field === 'accommodation'){
+      document.getElementById('arrivalField').style.display = (state.accommodation === 'yes') ? 'block' : 'none';
+      document.getElementById('err-accommodation').classList.remove('show');
+    }
+  }
+
+  function changeExtra(delta){
+    state.extraGuests = Math.max(0, state.extraGuests + delta);
+    document.getElementById('extraCount').innerText = state.extraGuests;
+  }
+
+  function showStep(n){
+    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
+    document.querySelector('.step[data-step="'+n+'"]').classList.add('active');
+    currentStep = n;
+    renderProgress();
+  }
+
+  function prevStep(from){
+    showStep(from - 1);
+  }
+
+  function validateStep1(){
+    state.firstName = document.getElementById('guestFirstName').value.trim();
+    state.lastName = document.getElementById('guestLastName').value.trim();
+    state.name = (state.firstName + ' ' + state.lastName).trim();
+    var ok = true;
+    if(!state.firstName){
+      document.getElementById('err-firstName').classList.add('show'); ok = false;
+    } else { document.getElementById('err-firstName').classList.remove('show'); }
+    if(!state.lastName){
+      document.getElementById('err-lastName').classList.add('show'); ok = false;
+    } else { document.getElementById('err-lastName').classList.remove('show'); }
+    if(!state.attending){
+      document.getElementById('err-attending').classList.add('show'); ok = false;
+    }
+    if(!ok) return;
+
+    if(state.attending === 'no'){
+      finalizeSummary();
+      showStep(3);
+    } else {
+      showStep(2);
+    }
+  }
+
+  var STAY_MIN = '2026-11-25';
+  var STAY_MAX = '2026-11-28';
+
+  function validateStep2(){
+    if(!state.accommodation){
+      document.getElementById('err-accommodation').classList.add('show');
+      return;
+    }
+    var ok = true;
+    if(state.accommodation === 'yes'){
+      state.arrival = document.getElementById('arrivalDate').value;
+      if(!state.arrival || state.arrival < STAY_MIN || state.arrival > STAY_MAX){
+        document.getElementById('err-arrival').classList.add('show'); ok = false;
+      } else { document.getElementById('err-arrival').classList.remove('show'); }
+    }
+    if(!ok) return;
+    finalizeSummary();
+    showStep(3);
+  }
+
+  function finalizeSummary(){
+    var box = document.getElementById('summaryBox');
+    var html = '';
+    html += '<div><b>Name:</b> ' + escapeHtml(state.name) + '</div>';
+    html += '<div><b>Attending:</b> ' + (state.attending === 'yes' ? 'Yes' : 'No') + '</div>';
+    if(state.attending === 'yes'){
+      html += '<div><b>Extra guests:</b> ' + state.extraGuests + '</div>';
+      html += '<div><b>Accommodation needed:</b> ' + (state.accommodation === 'yes' ? 'Yes' : 'No') + '</div>';
+      if(state.accommodation === 'yes'){
+        html += '<div><b>Arriving:</b> ' + (state.arrival || '—') + '</div>';
+      }
+    }
+    box.innerHTML = html;
+  }
+
+  function escapeHtml(str){
+    var d = document.createElement('div');
+    d.innerText = str;
+    return d.innerHTML;
+  }
+
+  function submitRSVP(){
+    state.wishes = document.getElementById('wishes').value.trim();
+
+    /* ---- BACKEND: Google Sheets via Apps Script ----
+       Replace the URL below with your deployed Apps Script Web App URL
+       (Extensions → Apps Script → Deploy → New deployment → Web app). */
+    var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuYtuSPmECLHT26YSAK_HawFDD3qIn6a5j62s5-rwNj0L-NmKUH3Xy7l-gUAcxtvB9pQ/exec";
+
+    if (APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state)
+      });
+    }
+
+    document.getElementById('formWrap').classList.remove('active');
+    var ty = document.getElementById('thankyou');
+    ty.classList.add('active');
+
+    if(state.attending === 'no'){
+      document.getElementById('thankyouTitle').innerText = "We'll miss you";
+      document.getElementById('thankyouText').innerText =
+        "Thank you for letting us know, " + state.name.split(' ')[0] + ". You'll be in our thoughts on the day.";
+    } else {
+      document.getElementById('thankyouTitle').innerText = "See you there";
+      document.getElementById('thankyouText').innerText =
+        "Thank you, " + state.name.split(' ')[0] + ". We've noted everything and can't wait to celebrate with you.";
+    }
+  }
+</script>
+
+</body>
+</html>

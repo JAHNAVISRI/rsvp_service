@@ -44,17 +44,16 @@
     body{
       background: var(--cream) url('background_image.jpg') center center / cover no-repeat fixed;
     }
-    .mobile-deco-top, .mobile-deco-bottom{ display:none; }
+    .mobile-deco-top{ display:none; }
   }
-  .mobile-deco-top, .mobile-deco-bottom{
+  .mobile-deco-top{
     position:fixed;
     left:0;
     width:100%;
     pointer-events:none;
     z-index:0;
+    top:0; height:64px;
   }
-  .mobile-deco-top{ top:0; height:64px; }
-  .mobile-deco-bottom{ bottom:0; height:120px; }
 
   /* --- Intro reveal (mobile) ---
      A curtain panel holds center-screen with the Ganesha motif, then
@@ -394,6 +393,12 @@
     max-width:340px;
     margin:0 auto;
   }
+  .thankyou-img{
+    width:250px;
+    height:auto;
+    margin:28px auto 0;
+    display:block;
+  }
 
   .summary-box{
     background:#ffffffa8;
@@ -427,18 +432,6 @@
     </pattern>
   </defs>
   <rect width="100%" height="64" fill="url(#toran)"/>
-</svg>
-
-<svg class="mobile-deco-bottom" viewBox="0 0 200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <defs>
-    <pattern id="templerow" width="100" height="120" patternUnits="userSpaceOnUse">
-      <path d="M50 120 L50 66 L58 66 L58 52 L50 38 L42 52 L42 66 L34 66 L34 120" fill="#2F4A3B" opacity="0.38"/>
-      <path d="M18 120 C18 102 28 94 28 80 C28 94 38 102 38 120" fill="#2F4A3B" opacity="0.28"/>
-      <path d="M62 120 C62 102 72 94 72 80 C72 94 82 102 82 120" fill="#2F4A3B" opacity="0.28"/>
-      <rect x="0" y="116" width="100" height="4" fill="#6E1029" opacity="0.22"/>
-    </pattern>
-  </defs>
-  <rect width="100%" height="120" fill="url(#templerow)"/>
 </svg>
 
 <div class="intro-overlay" id="introOverlay">
@@ -533,8 +526,13 @@
       </div>
       <div class="field" id="arrivalField" style="display:none;">
         <label class="field-label">Arriving on</label>
-        <input type="date" id="arrivalDate" min="2026-11-25" max="2026-11-28">
-        <div class="error-msg" id="err-arrival">Please choose a date between Nov 25 and Nov 28 — accommodation is available from 4:00 PM on the 25th through 9:00 AM on the 28th.</div>
+        <div class="choice-row">
+          <div class="choice-btn" data-value="2026-11-25" onclick="selectChoice(this,'arrival')">Nov 25</div>
+          <div class="choice-btn" data-value="2026-11-26" onclick="selectChoice(this,'arrival')">Nov 26</div>
+          <div class="choice-btn" data-value="2026-11-27" onclick="selectChoice(this,'arrival')">Nov 27</div>
+        </div>
+        <div class="helper-note">Accommodation is available from 4:00 PM on November 25th until 9:00 AM on November 28th</div>
+        <div class="error-msg" id="err-arrival">Please let us know which day you'll be arriving.</div>
       </div>
       <div class="nav-row">
         <button class="btn btn-ghost" onclick="prevStep(2)">Back</button>
@@ -547,7 +545,7 @@
       <div class="step-title">Almost done</div>
       <div class="step-sub">A note for the couple, if you'd like.</div>
       <div class="field">
-        <textarea id="wishes" placeholder="Optional — your blessings and wishes"></textarea>
+        <textarea id="wishes" placeholder="Optional"></textarea>
       </div>
       <div class="summary-box" id="summaryBox"></div>
       <div class="nav-row">
@@ -561,6 +559,10 @@
     <div class="mark">✻</div>
     <h2 id="thankyouTitle">Thank you</h2>
     <p id="thankyouText">Your response means a great deal to us. We can't wait to celebrate together.</p>
+    <img src="namaste.png" alt="" class="thankyou-img">
+    <img src="kolam.png" alt="" class="thankyou-img">
+
+
   </div>
 
 </div>
@@ -625,6 +627,9 @@
       document.getElementById('arrivalField').style.display = (state.accommodation === 'yes') ? 'block' : 'none';
       document.getElementById('err-accommodation').classList.remove('show');
     }
+    if(field === 'arrival'){
+      document.getElementById('err-arrival').classList.remove('show');
+    }
   }
 
   function changeExtra(delta){
@@ -667,9 +672,6 @@
     }
   }
 
-  var STAY_MIN = '2026-11-25';
-  var STAY_MAX = '2026-11-28';
-
   function validateStep2(){
     if(!state.accommodation){
       document.getElementById('err-accommodation').classList.add('show');
@@ -677,8 +679,7 @@
     }
     var ok = true;
     if(state.accommodation === 'yes'){
-      state.arrival = document.getElementById('arrivalDate').value;
-      if(!state.arrival || state.arrival < STAY_MIN || state.arrival > STAY_MAX){
+      if(!state.arrival){
         document.getElementById('err-arrival').classList.add('show'); ok = false;
       } else { document.getElementById('err-arrival').classList.remove('show'); }
     }
@@ -686,6 +687,12 @@
     finalizeSummary();
     showStep(3);
   }
+
+  var ARRIVAL_LABELS = {
+    '2026-11-25': 'Nov 25',
+    '2026-11-26': 'Nov 26',
+    '2026-11-27': 'Nov 27'
+  };
 
   function finalizeSummary(){
     var box = document.getElementById('summaryBox');
@@ -696,7 +703,7 @@
       html += '<div><b>Extra guests:</b> ' + state.extraGuests + '</div>';
       html += '<div><b>Accommodation needed:</b> ' + (state.accommodation === 'yes' ? 'Yes' : 'No') + '</div>';
       if(state.accommodation === 'yes'){
-        html += '<div><b>Arriving:</b> ' + (state.arrival || '—') + '</div>';
+        html += '<div><b>Arriving:</b> ' + (ARRIVAL_LABELS[state.arrival] || '—') + '</div>';
       }
     }
     box.innerHTML = html;
@@ -732,11 +739,11 @@
     if(state.attending === 'no'){
       document.getElementById('thankyouTitle').innerText = "We'll miss you";
       document.getElementById('thankyouText').innerText =
-        "Thank you for letting us know, " + state.name.split(' ')[0] + ". You'll be in our thoughts on the day.";
+        "Thank you for letting us know, " + state.name + ". You'll be in our thoughts on the day.";
     } else {
       document.getElementById('thankyouTitle').innerText = "See you there";
       document.getElementById('thankyouText').innerText =
-        "Thank you, " + state.name.split(' ')[0] + ". We've noted everything and can't wait to celebrate with you.";
+        "Thank you, " + state.name + ". We've noted everything and can't wait to celebrate with you.";
     }
   }
 </script>

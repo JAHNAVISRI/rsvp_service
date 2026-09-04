@@ -121,6 +121,7 @@
     .r5{ animation-delay: 2.6s; }
     .r6{ animation-delay: 2.75s; }
     .r7{ animation-delay: 2.9s; }
+    .r8{ animation-delay: 3.05s; }
   }
   @media (prefers-reduced-motion: reduce){
     .intro-overlay{ display:none; }
@@ -345,6 +346,35 @@
     border-color:var(--maroon);
   }
 
+  .event-choice-list{ display:flex; flex-direction:column; gap:8px; }
+  .event-choice-btn{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 14px;
+    border:1.3px solid var(--gold-light);
+    border-radius:4px;
+    background:#fffdf8;
+    cursor:pointer;
+  }
+  .event-choice-name{
+    font-weight:600;
+    color:var(--ink);
+    font-size:14px;
+  }
+  .event-choice-day{
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .event-choice-btn.selected{
+    background:var(--maroon);
+    border-color:var(--maroon);
+  }
+  .event-choice-btn.selected .event-choice-name,
+  .event-choice-btn.selected .event-choice-day{
+    color:var(--cream);
+  }
+
   .stepper{
     display:flex;
     align-items:center;
@@ -459,18 +489,23 @@
 
   <div class="events" id="eventsWrap">
     <div class="event-card reveal-item r5">
-      <div class="event-day">Thursday · November 26</div>
-      <div class="event-name">Pellikuturu &amp; Pellikoduku</div>
-      <div class="event-detail">Morning rituals for the bride and groom, at their respective homes. Details will follow individually.</div>
+      <div class="event-day">Wednesday · November 25 · 7:32 AM</div>
+      <div class="event-name">Upanayanam</div>
+      <div class="event-detail">16774 Los Positas Way, Tracy, CA 95304</div>
     </div>
     <div class="event-card reveal-item r6">
+      <div class="event-day">Thursday · November 26 · 10:00 AM</div>
+      <div class="event-name">Pellikuturu &amp; Pellikoduku</div>
+      <div class="event-detail">16774 Los Positas Way, Tracy, CA 95304</div>
+    </div>
+    <div class="event-card reveal-item r7">
       <div class="event-day">Friday · November 27 · 10:21 AM</div>
       <div class="event-name">The Wedding</div>
       <div class="event-detail">Akella Assembly Hall, Shiva-Vishnu Temple<br>1232 Arrowhead Avenue, Livermore, CA 94551<br></div>
     </div>
   </div>
 
-  <div class="cta-wrap reveal-item r7" id="ctaWrap">
+  <div class="cta-wrap reveal-item r8" id="ctaWrap">
     <button class="btn btn-primary" onclick="goToForm()">RSVP</button>
     <div class="helper-note">Just a couple of minutes — it helps us plan for you with care.</div>
   </div>
@@ -493,15 +528,29 @@
         <div class="error-msg" id="err-lastName">Please share your last name so we know who's coming.</div>
       </div>
       <div class="field">
-        <label class="field-label">Will you be joining us for the wedding?</label>
-        <div class="choice-row">
-          <div class="choice-btn" data-value="yes" onclick="selectChoice(this,'attending')">Joyfully, yes</div>
-          <div class="choice-btn" data-value="no" onclick="selectChoice(this,'attending')">Can't make it</div>
+        <label class="field-label">Which celebrations will you be joining us for?</label>
+        <div class="step-sub" style="margin:0 0 10px;">Select all that apply — it really helps us plan the arrangements.</div>
+        <div class="event-choice-list">
+          <div class="event-choice-btn" data-event="upanayanam" onclick="toggleEvent(this)">
+            <span class="event-choice-name">Upanayanam</span>
+            <span class="event-choice-day">Wed, Nov 25</span>
+          </div>
+          <div class="event-choice-btn" data-event="pellikuturu" onclick="toggleEvent(this)">
+            <span class="event-choice-name">Pellikuturu &amp; Pellikoduku</span>
+            <span class="event-choice-day">Thu, Nov 26</span>
+          </div>
+          <div class="event-choice-btn" data-event="wedding" onclick="toggleEvent(this)">
+            <span class="event-choice-name">The Wedding</span>
+            <span class="event-choice-day">Fri, Nov 27</span>
+          </div>
         </div>
-        <div class="error-msg" id="err-attending">Please let us know either way.</div>
+        <div class="choice-row" style="margin-top:10px;">
+          <div class="choice-btn" data-value="none" onclick="selectNoneOption(this)">I won't be able to make it this time</div>
+        </div>
+        <div class="error-msg" id="err-attending">Please select at least one celebration, or let us know if you can't make it.</div>
       </div>
       <div class="field" id="extraGuestsField" style="display:none;">
-        <label class="field-label">Any family joining with you?</label>
+        <label class="field-label">How many guests with you?</label>
         <div class="stepper">
           <button type="button" onclick="changeExtra(-1)">−</button>
           <span id="extraCount">0</span>
@@ -585,11 +634,18 @@
     firstName: '',
     lastName: '',
     name: '',
+    events: { upanayanam: false, pellikuturu: false, wedding: false },
     attending: null,
     extraGuests: 0,
     accommodation: null,
     arrival: '',
     wishes: ''
+  };
+
+  var EVENT_LABELS = {
+    upanayanam: 'Upanayanam',
+    pellikuturu: 'Pellikuturu & Pellikoduku',
+    wedding: 'The Wedding'
   };
   var currentStep = 1;
   var totalSteps = 3;
@@ -630,6 +686,37 @@
     if(field === 'arrival'){
       document.getElementById('err-arrival').classList.remove('show');
     }
+  }
+
+  function updateAttendingDerived(){
+    var anyEvent = state.events.upanayanam || state.events.pellikuturu || state.events.wedding;
+    state.attending = anyEvent ? 'yes' : (state.cantMake ? 'no' : null);
+    document.getElementById('extraGuestsField').style.display = anyEvent ? 'block' : 'none';
+    document.getElementById('err-attending').classList.remove('show');
+  }
+
+  function toggleEvent(el){
+    var key = el.getAttribute('data-event');
+    state.events[key] = !state.events[key];
+    el.classList.toggle('selected', state.events[key]);
+    if(state.events[key]){
+      state.cantMake = false;
+      var noneBtn = document.querySelector('.choice-btn[data-value="none"]');
+      if(noneBtn){ noneBtn.classList.remove('selected'); }
+    }
+    updateAttendingDerived();
+  }
+
+  function selectNoneOption(el){
+    state.cantMake = !state.cantMake;
+    el.classList.toggle('selected', state.cantMake);
+    if(state.cantMake){
+      state.events.upanayanam = false;
+      state.events.pellikuturu = false;
+      state.events.wedding = false;
+      document.querySelectorAll('.event-choice-btn').forEach(function(b){ b.classList.remove('selected'); });
+    }
+    updateAttendingDerived();
   }
 
   function changeExtra(delta){
@@ -694,11 +781,19 @@
     '2026-11-27': 'Nov 27'
   };
 
+  function selectedEventNames(){
+    var names = [];
+    if(state.events.upanayanam) names.push(EVENT_LABELS.upanayanam);
+    if(state.events.pellikuturu) names.push(EVENT_LABELS.pellikuturu);
+    if(state.events.wedding) names.push(EVENT_LABELS.wedding);
+    return names;
+  }
+
   function finalizeSummary(){
     var box = document.getElementById('summaryBox');
     var html = '';
     html += '<div><b>Name:</b> ' + escapeHtml(state.name) + '</div>';
-    html += '<div><b>Attending:</b> ' + (state.attending === 'yes' ? 'Yes' : 'No') + '</div>';
+    html += '<div><b>Attending:</b> ' + (state.attending === 'yes' ? escapeHtml(selectedEventNames().join(', ')) : "Won't be attending") + '</div>';
     if(state.attending === 'yes'){
       html += '<div><b>Extra guests:</b> ' + state.extraGuests + '</div>';
       html += '<div><b>Accommodation needed:</b> ' + (state.accommodation === 'yes' ? 'Yes' : 'No') + '</div>';
